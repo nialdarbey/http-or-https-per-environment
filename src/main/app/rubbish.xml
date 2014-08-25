@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:https="http://www.mulesoft.org/schema/mule/https"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/https http://www.mulesoft.org/schema/mule/https/current/mule-https.xsd">
+
+
+
+	<spring:beans profile="dev">
+		<mule>
+			<endpoint exchange-pattern="request-response" address="http://localhost:7071/facade"
+				name="facade" />
+
+			<endpoint address="http://www.mulesoft.com/" name="backend"
+				doc:name="backend" />
+
+		</mule>
+	</spring:beans>
+	<spring:beans profile="prod">
+		<mule>
+			<endpoint exchange-pattern="request-response" address="https://localhost:8081/facade"
+				name="facade" connector-ref="httpsConnector" />
+
+			<endpoint address="https://www.google.com.br/?gws_rd=ssl" doc:name="backend"
+				name="backend" />
+
+
+		</mule>
+	</spring:beans>
+
+ 	<https:connector name="httpsConnector" cookieSpec="netscape"
+		validateConnections="true" sendBufferSize="0" receiveBufferSize="0"
+		receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000"
+		socketSoLinger="0" doc:name="HTTP\HTTPS">
+		<service-overrides sessionHandler="org.mule.session.NullSessionHandler" />
+		<https:tls-key-store path="keystore.jks"
+			keyPassword="changeit" storePassword="changeit" />
+	</https:connector>
+	
+	
+	<flow name="main" doc:name="main">
+		
+		<inbound-endpoint ref="facade" doc:name="Facade" />
+        
+        <set-property propertyName="http.method" value="GET" doc:name="http.method = GET"/>
+		
+		<outbound-endpoint ref="backend" doc:name="Backend" />
+	</flow>
+
+
+
+
+
+</mule>
